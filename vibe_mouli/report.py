@@ -40,13 +40,18 @@ def render(result: dict, console: Console) -> None:
     style = result.get("style", [])
     counts = Counter(i["severity"] for i in style)
     console.print(
-        f"\n[bold]Coding style[/bold] (approximation locale) — "
+        f"\n[bold]Coding style[/bold] (epiclang, non noté) — "
         f"MAJOR {counts['MAJOR']} · MINOR {counts['MINOR']} · INFO {counts['INFO']}"
     )
     for i in style[:15]:
-        console.print(f"  {escape(i['file'])}:{i['line']}: {i['severity']}:{i['code']} {escape(i['message'])}")
+        console.print(f"  {escape(i['file'])}:{i['line']}:{i['col']}: {i['severity']}:{i['code']} {escape(i['message'])}")
     if len(style) > 15:
         console.print(f"  … {len(style) - 15} autre(s)")
+    errors = result.get("style_errors", [])
+    if errors:
+        console.print(f"  [yellow]{len(errors)} erreur(s) de compilation : le contrôle peut être incomplet[/yellow]")
+        for e in errors[:5]:
+            console.print(f"  {escape(e)}")
 
     passed, total = score(result)
     pct = 100 * passed / total if total else 0

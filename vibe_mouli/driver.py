@@ -172,10 +172,39 @@ def build_checks(b, src=SRC):
     return out
 
 
+def style_checks(src=SRC):
+    """Coding style : epiclang sur chaque .c/.h (syntaxe seule, sans link) + banana-check-repo.
+    Lancé AVANT make, pour ne pas voir les .o produits par le build."""
+    c_files, include_dirs = [], set()
+    for root, dirs, files in os.walk(src):
+        dirs[:] = [d for d in dirs if d != ".git"]
+        for name in files:
+            if name.endswith((".c", ".h")):
+                rel = os.path.relpath(os.path.join(root, name), src)
+                c_files.append(rel)
+                if name.endswith(".h"):
+                    include_dirs.add(os.path.relpath(root, src))
+    includes = []
+    for d in sorted(include_dirs):
+        includes += ["-I", d]
+
+    epi_stderr = []
+    for rel in sorted(c_files):
+        r = sh(["epiclang", "-fsyntax-only", *includes, rel], 60, cwd=src)
+        epi_stderr.append(r["stderr"] if r["rc"] is not None else f"{rel}: error: {r['error'] or 'timeout'}")
+    repo = sh(["banana-check-repo"], 60, cwd=src)
+    return {
+        "style_raw": "\n".join(epi_stderr),
+        "repo_raw": repo["stdout"] + repo["stderr"],
+        "c_files": len(c_files),
+    }
+
+
 def main():
     with open(SPEC, encoding="utf-8") as f:
         spec = json.load(f)
     results = {"build": [], "tests": []}
+    results.update(style_checks())
     if spec.get("build"):
         results["build"] = build_checks(spec["build"])
     results["tests"] = [run_test(t) for t in spec.get("tests", [])]

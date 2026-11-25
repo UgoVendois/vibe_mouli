@@ -8,17 +8,18 @@
 - **Criterion absent** (`/usr/include/criterion` introuvable) : les tests unitaires `criterion` ne sont pas exécutables tels quels — à traiter plus tard.
 - Pin : la config doit fixer le digest `sha256:20a7d00e…` plutôt que `latest`. (Pas encore fait : `--image` par défaut = `latest`.)
 
-## 2. Coding style checker — **non vérifié, accès impossible**
-- `ghcr.io/epitech/coding-style-checker:latest` : **introuvable** (`docker pull` → « not found », tenté le 2026-11-25).
-- `github.com/Epitech/coding-style-checker` : 404 via `gh api` (repo privé ou renommé).
-- Indices publics : le checker s'appuie sur **Vera++** (banana-vera) ; un script tiers monte un dossier de rapports dans l'image — nom exact du log **non confirmé** (cf. https://gist.github.com/Sigmanificient/6ef147920ad057ef6bcd9b057f81d83d et https://awesome.ecosyste.ms/projects/github.com%2FEpitech%2Fcoding-style-checker).
-- Conséquence : le **parseur** suit le format du PROMPT (`fichier:ligne: GRAVITÉ:C-XX`), mais la **liste des règles n'est pas établie**. Le coding style affiché est une **approximation locale** (80 colonnes, espaces fin de ligne, tabulations), étiquetée `LOCAL-*`.
+## 2. Coding style — `epiclang` et `banana-check-repo` (vérifiés dans l'image)
+- Les deux outils sont **déjà présents** dans `epitechcontent/epitest-docker:latest` (`/usr/bin/epiclang`, `/usr/bin/banana-check-repo`). L'image ghcr `coding-style-checker` n'est pas nécessaire.
+- `epiclang` : wrapper bash → `epiclang.py` → clang 21 + plugin `/usr/lib/epiclang/plugins/epiclang-plugin-banana.so`. Usage utilisé : `epiclang -fsyntax-only [-I dirs] fichier.c`. Format : `a.c:4:78: warning: [Banana] [Major] 116-character line (C-F3)`. Gravités observées : Major, Minor (Info non observé). rc 0 même avec infractions.
+- `banana-check-repo` (sans argument, depuis la racine) : règles C-O1 (fichiers indésirables : .o, .a, .so, binaires, `~`, `#*`, vgcore…) et C-O4. Ignore `.git`, `tests`, `bonus`. Format : `/job/src/a.o: [Banana] [Major] unwanted file (C-O1)`. rc 1 si infraction.
+- Règles présentes dans le plugin (extraites de la chaîne binaire) : C-A3, C-C1–3, C-F2–8, C-G1–8, C-G10, C-H1–3, C-L1–6, C-O3, C-V1, C-V3.
+- Le driver lance ces outils **avant `make`** pour ne pas voir les `.o` produits par le build.
 
 ## 3. my.epitech.eu / api.epitest.eu — **non recherché à ce stade**
 - Pas d'accès authentifié dans cette session : endpoints (`/me/<année>`, `/me/details/<id>`), format de réponse, méthode d'auth (SSO Microsoft → bearer) **non confirmés**. À observer dans le navigateur de l'utilisateur (Claude in Chrome ou DevTools) avant d'implémenter `login`.
 
 ## 4. Repos GitHub des projets
-- Non vérifié (nommage `B-PSU-…`, orgas `EpitechPromo*` / `Epitech<Année>`) : à confirmer avec un repo réel de l'utilisateur.
+- Piste : `banana-check-repo` (nom fourni par l'utilisateur). Nommage (`B-PSU-…`) non vérifié (nommage `B-PSU-…`, orgas `EpitechPromo*` / `Epitech<Année>`) : à confirmer avec un repo réel de l'utilisateur.
 
 ## 5. Règles d'une moulinette réelle
 - Non validées contre une vraie moulinette. Le socle implémente : `make` réussit, binaire exécutable, pas de relink, `clean`/`fclean`/`re`, fichiers interdits, fonctions autorisées via `nm -u`. Les listes exactes et les flags interdits sont à compléter par projet dans `project.yml`.

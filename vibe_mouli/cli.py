@@ -42,13 +42,17 @@ def run(
         console.print(f"[red]Erreur :[/red] {exc}")
         raise typer.Exit(code=2)
 
-    forbidden = static_checks.forbidden_files(project)
+    style_raw = result.pop("style_raw", "")
+    style_items = static_checks.parse_epiclang(style_raw)
+    repo_items = static_checks.parse_banana_repo(result.pop("repo_raw", ""))
     result["build"].append({
-        "category": "Build", "name": "aucun fichier interdit dans le repo",
-        "passed": not forbidden, "reason": "" if not forbidden else ", ".join(forbidden),
+        "category": "Build", "name": "banana-check-repo : aucune infraction (C-O)",
+        "passed": not repo_items,
+        "reason": "" if not repo_items else ", ".join(f"{i.file} ({i.code})" for i in repo_items),
         "diff": "", "stdout": "", "stderr": "", "rc": None, "expected_rc": None, "expected_stdout": None,
     })
-    result["style"] = [i.as_dict() for i in static_checks.local_style_check(project)]
+    result["style"] = [i.as_dict() for i in style_items]
+    result["style_errors"] = static_checks.epiclang_errors(style_raw)
     result["project"] = project_cfg.get("name", project.name)
 
     report.render(result, console)

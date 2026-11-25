@@ -1,27 +1,47 @@
+"""Parseurs testés avec les sorties réelles de epiclang et banana-check-repo (image epitest)."""
+
 from vibe_mouli import static_checks
 
+EPICLANG_OUT = """\
+a.c:4:1: warning: [Banana] [Minor] tab used for indentation (C-L2)
+    4 |         printf("aaaa");
+      | ^
+a.c:4:113: warning: [Banana] [Minor] trailing space (C-G7)
+a.c:1:1: warning: [Banana] [Minor] file not starting with standard Epitech header (C-G1)
+a.c:4:78: warning: [Banana] [Major] 116-character line (C-F3)
+4 warnings generated.
+"""
 
-def test_parse_checker_report_format_prompt():
-    text = "main.c:12: MAJOR:C-3 ligne trop longue\nfoo.h:1: INFO:C-9\nbruit sans format\n"
-    items = static_checks.parse_checker_report(text)
-    assert [(i.file, i.line, i.severity, i.code) for i in items] == [
-        ("main.c", 12, "MAJOR", "C-3"),
-        ("foo.h", 1, "INFO", "C-9"),
+REPO_OUT = """\
+Checking delivery files in /job/src
+/job/src/a.o: [Banana] [Major] unwanted file (C-O1)
+"""
+
+
+def test_epiclang_real_output_is_parsed_and_context_ignored():
+    items = static_checks.parse_epiclang(EPICLANG_OUT)
+    assert [(i.file, i.line, i.col, i.severity, i.code) for i in items] == [
+        ("a.c", 4, 1, "MINOR", "C-L2"),
+        ("a.c", 4, 113, "MINOR", "C-G7"),
+        ("a.c", 1, 1, "MINOR", "C-G1"),
+        ("a.c", 4, 78, "MAJOR", "C-F3"),
     ]
 
 
-def test_local_style_check_flags_long_trailing_tab(tmp_path):
-    (tmp_path / "a.c").write_text("x" * 81 + "\n" + "ok \n" + "\tint y;\n", encoding="utf-8")
-    codes = sorted(i.code for i in static_checks.local_style_check(tmp_path))
-    assert codes == ["LOCAL-LINE80", "LOCAL-TAB", "LOCAL-TRAILING"]
+def test_epiclang_duplicates_are_merged():
+    text = EPICLANG_OUT + EPICLANG_OUT
+    assert len(static_checks.parse_epiclang(text)) == 4
 
 
-def test_local_style_check_ignores_non_c_files(tmp_path):
-    (tmp_path / "Makefile").write_text("x" * 200 + "\n", encoding="utf-8")
-    assert static_checks.local_style_check(tmp_path) == []
+def test_epiclang_errors_exclude_banana_warnings():
+    text = "a.c:3:10: error: 'foo.h' file not found\n" + EPICLANG_OUT
+    assert static_checks.epiclang_errors(text) == ["a.c:3:10: error: 'foo.h' file not found"]
 
 
-def test_forbidden_files(tmp_path):
-    for name in ["a.o", "vgcore.123", "main.c~", "#main.c#", "ok.c"]:
-        (tmp_path / name).write_text("", encoding="utf-8")
-    assert static_checks.forbidden_files(tmp_path) == ["#main.c#", "a.o", "main.c~", "vgcore.123"]
+def test_banana_repo_real_output_strips_container_prefix():
+    items = static_checks.parse_banana_repo(REPO_OUT)
+    assert [(i.file, i.severity, i.code) for i in items] == [("a.o", "MAJOR", "C-O1")]
+
+
+def test_banana_repo_clean_output_has_no_infraction():
+    assert static_checks.parse_banana_repo("Checking delivery files in /job/src\n") == []

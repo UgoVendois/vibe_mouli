@@ -58,7 +58,7 @@ Les variables `LC_ALL=C` sont imposées pour rendre `ls` déterministe. `stdin` 
 - `crash` : segfault détecté (`SIGSEGV`) ;
 - `loop` : boucle infinie détectée (timeout) ;
 - `relink` : `make` relinke sans changement → KO ;
-- `style_faults` : lignes trop longues, espaces, tabulations (approximation de style).
+- `style_faults` : lignes trop longues, espaces, tabulations (epiclang : C-F3, C-G7, C-L2…).
 
 ## Tests de l'outil
 ```bash
@@ -66,7 +66,8 @@ Les variables `LC_ALL=C` sont imposées pour rendre `ls` déterministe. `stdin` 
 ```
 
 ## Limites connues
-- **Coding style** : le checker officiel (`ghcr.io/epitech/coding-style-checker`) n'est pas accessible publiquement ; seules 3 règles locales approximatives sont appliquées (voir `docs/RESEARCH.md`). Le parseur du format officiel est prêt mais non validé contre un vrai log.
+- **Coding style** : `epiclang` (plugin banana) et `banana-check-repo` sont utilisés tels quels dans l'image. Le coding style n'est **pas noté** (affiché avec compteurs) ; la note ne porte que sur les contrôles de build, de repo (C-O) et les tests.
+- Si `epiclang` ne compile pas un fichier (include manquant…), le contrôle est incomplet : le rapport l'indique.
 - **Criterion** absent de l'image : pas de tests unitaires criterion.
 - **my.epitech.eu** : non implémenté ; endpoints non confirmés.
 - Catalogue : seuls les 5 projets jouets existent ; `my_sudo`, `organized`, `minishell1`, `my_ls` complet ne sont pas encore écrits.
