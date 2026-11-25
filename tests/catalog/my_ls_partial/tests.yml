@@ -1,0 +1,28 @@
+# Référence : `ls` réel sur le même dossier (LC_ALL=C imposé par le driver).
+tests:
+  - name: listing simple d'un dossier
+    category: Listing
+    cmd: ["./my_ls", "fixtures"]
+    reference: ["ls", "fixtures"]
+
+  - name: listing d'un sous-dossier
+    category: Listing
+    cmd: ["./my_ls", "fixtures/dir"]
+    reference: ["ls", "fixtures/dir"]
+
+  - name: option -a (fichiers cachés)
+    category: Options
+    cmd: ["./my_ls", "-a", "fixtures"]
+    reference: ["ls", "-a", "fixtures"]
+
+  - name: option -r (ordre inverse)
+    category: Options
+    cmd: ["./my_ls", "-r", "fixtures"]
+    reference: ["ls", "-r", "fixtures"]
+
+  - name: dossier inexistant
+    category: Erreurs
+    cmd: ["./my_ls", "inexistant"]
+    expect:
+      exit_code: 84
+      stdout: ""

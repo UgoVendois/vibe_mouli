@@ -1,0 +1,4 @@
+name: my_ls_partial
+binary: my_ls
+allowed_functions: [opendir, readdir, closedir, printf, puts, fprintf, stderr, malloc, realloc, free, strdup, strcmp, qsort]
+build_timeout: 120

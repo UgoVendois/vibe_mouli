@@ -1,0 +1,5 @@
+tests:
+  - name: sortie attendue
+    category: Fonctionnel
+    cmd: ["./relink"]
+    expect: {exit_code: 0, stdout: "ok\n"}

@@ -1,0 +1,3 @@
+name: loop
+binary: loop
+allowed_functions: [printf, puts, strcmp]

@@ -1,0 +1,10 @@
+tests:
+  - name: arguments affichés à l'envers
+    category: Fonctionnel
+    cmd: ["./prog", "a", "b"]
+    expect: {exit_code: 0, stdout: "b a\n"}
+
+  - name: argument « -- » (doit ne pas segfaulter)
+    category: Robustesse
+    cmd: ["./prog", "--crash"]
+    expect: {exit_code: 0, stdout: "--crash\n"}

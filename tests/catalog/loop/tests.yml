@@ -1,0 +1,11 @@
+tests:
+  - name: affichage simple
+    category: Fonctionnel
+    cmd: ["./loop", "hello"]
+    expect: {exit_code: 0, stdout: "hello\n"}
+
+  - name: ne doit pas boucler (timeout 2s)
+    category: Robustesse
+    cmd: ["./loop", "loop"]
+    timeout: 2
+    expect: {exit_code: 0, stdout: ""}

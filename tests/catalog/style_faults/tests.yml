@@ -1,0 +1,5 @@
+tests:
+  - name: sortie attendue
+    category: Fonctionnel
+    cmd: ["./style_faults"]
+    expect: {exit_code: 0, stdout: "ok, this line is intentionally far too long to break the eighty column rule of the norm"}
